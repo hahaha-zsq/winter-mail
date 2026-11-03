@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: winter-mail
+  datasource:
+    url: ${MAIL_DB_URL:jdbc:mysql://mysql.winter-cloud.xyz:4000/winter_mail?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=true&createDatabaseIfNotExist=true}
+    username: ${MAIL_DB_USER:root}
+    password: ${MAIL_DB_PASSWORD:}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 25MB
+mail:
+  credential-key: ${MAIL_CREDENTIAL_KEY:}
+server:
+  address: 127.0.0.1
