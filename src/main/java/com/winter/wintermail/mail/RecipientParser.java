@@ -4,9 +4,13 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import java.util.*;
 
-/** 解析批量收件人：支持常见分隔符，保序去重并限制单次发送规模。 */
+/**
+ * 解析批量收件人：支持常见分隔符，保序去重并限制单次发送规模。
+ */
 public class RecipientParser {
-    /** 逗号、分号、空白均可分隔地址；返回小写且保持首次出现顺序。 */
+    /**
+     * 逗号、分号、空白均可分隔地址；返回小写且保持首次出现顺序。
+     */
     public static List<String> parse(String input) {
         // LinkedHashSet 同时完成去重和保序，避免同一收件人收到重复邮件。
         Set<String> addresses = new LinkedHashSet<>();

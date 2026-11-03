@@ -14,18 +14,28 @@ import java.util.List;
 import java.util.Properties;
 import java.util.function.Function;
 
-/** 为每个账号创建独立 SMTP 客户端，并通过自定义 starter 发送邮件。 */
+/**
+ * 为每个账号创建独立 SMTP 客户端，并通过自定义 starter 发送邮件。
+ */
 @Service
 public class AccountMailSender {
     private final Function<Account, JavaMailSender> senderFactory;
 
-    public AccountMailSender() { this(AccountMailSender::createSender); }
-    AccountMailSender(Function<Account, JavaMailSender> senderFactory) { this.senderFactory = senderFactory; }
+    public AccountMailSender() {
+        this(AccountMailSender::createSender);
+    }
 
-    /** 纯文本附件使用 MimeMessageHelper；其余格式委托 WinterMailTemplate。 */
+    AccountMailSender(Function<Account, JavaMailSender> senderFactory) {
+        this.senderFactory = senderFactory;
+    }
+
+    /**
+     * 纯文本附件使用 MimeMessageHelper；其余格式委托 WinterMailTemplate。
+     */
     public boolean send(Account account, String recipient, List<String> cc, String subject, String body, String format, MultipartFile[] attachments) throws Exception {
         String normalized = format == null || format.isBlank() ? "text" : format.toLowerCase(java.util.Locale.ROOT);
-        if (!normalized.equals("text") && !normalized.equals("html")) throw new IllegalArgumentException("邮件格式仅支持 text 或 html");
+        if (!normalized.equals("text") && !normalized.equals("html"))
+            throw new IllegalArgumentException("邮件格式仅支持 text 或 html");
         if (body == null || body.isBlank()) throw new IllegalArgumentException("请填写邮件正文");
         // starter 接受 MailDTO；一封邮件只设置一个 To，批量循环在 API 层执行。
         MailDTO message = new MailDTO();
@@ -54,7 +64,9 @@ public class AccountMailSender {
         return normalized.equals("html") ? template.sendTemplateEmail(message) : template.sendMail(message);
     }
 
-    /** 每个账号使用各自的主机、端口和授权码；SSL 与 STARTTLS 二选一。 */
+    /**
+     * 每个账号使用各自的主机、端口和授权码；SSL 与 STARTTLS 二选一。
+     */
     private static JavaMailSender createSender(Account account) {
         JavaMailSenderImpl sender = new JavaMailSenderImpl();
         sender.setHost(account.settings().smtpHost());
@@ -69,7 +81,10 @@ public class AccountMailSender {
         props.put("mail.smtp.timeout", "10000");
         props.put("mail.smtp.writetimeout", "10000");
         if (account.settings().smtpSsl()) props.put("mail.smtp.ssl.enable", "true");
-        else { props.put("mail.smtp.starttls.enable", "true"); props.put("mail.smtp.starttls.required", "true"); }
+        else {
+            props.put("mail.smtp.starttls.enable", "true");
+            props.put("mail.smtp.starttls.required", "true");
+        }
         return sender;
     }
 }

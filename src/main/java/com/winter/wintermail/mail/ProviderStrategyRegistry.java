@@ -3,14 +3,20 @@ package com.winter.wintermail.mail;
 import java.util.Map;
 import java.util.function.Supplier;
 
-/** 按厂商选择固定服务器配置，或采用用户填写的自定义配置。 */
+/**
+ * 按厂商选择固定服务器配置，或采用用户填写的自定义配置。
+ */
 public class ProviderStrategyRegistry {
-    /** 每种厂商把用户输入转换为最终的收发服务器配置。 */
+    /**
+     * 每种厂商把用户输入转换为最终的收发服务器配置。
+     */
     private interface ProviderStrategy {
         ProviderSettings settings(String imapHost, Integer imapPort, String smtpHost, Integer smtpPort, Boolean smtpSsl);
     }
 
-    /** 新增厂商时在此登记策略，避免把厂商判断分散到 API 和发信代码。 */
+    /**
+     * 新增厂商时在此登记策略，避免把厂商判断分散到 API 和发信代码。
+     */
     private final Map<String, ProviderStrategy> strategies = Map.of(
             "gmail", fixed(() -> new ProviderSettings("imap.gmail.com", 993, "smtp.gmail.com", 587, false)),
             "qq", fixed(() -> new ProviderSettings("imap.qq.com", 993, "smtp.qq.com", 465, true)),
@@ -20,12 +26,16 @@ public class ProviderStrategyRegistry {
             "custom", (imapHost, imapPort, smtpHost, smtpPort, smtpSsl) -> new ProviderSettings(imapHost, imapPort == null ? 993 : imapPort, smtpHost, smtpPort == null ? 465 : smtpPort, Boolean.TRUE.equals(smtpSsl))
     );
 
-    /** 固定厂商忽略表单里可能携带的主机与端口，使用已知配置。 */
+    /**
+     * 固定厂商忽略表单里可能携带的主机与端口，使用已知配置。
+     */
     private ProviderStrategy fixed(Supplier<ProviderSettings> supplier) {
         return (a, b, c, d, e) -> supplier.get();
     }
 
-    /** 解析后统一校验主机和端口，防止无效配置进入数据库。 */
+    /**
+     * 解析后统一校验主机和端口，防止无效配置进入数据库。
+     */
     public ProviderSettings resolve(String provider, String imapHost, Integer imapPort, String smtpHost, Integer smtpPort, Boolean smtpSsl) {
         ProviderStrategy strategy = strategies.get(provider == null ? "custom" : provider.toLowerCase());
         if (strategy == null) throw new IllegalArgumentException("不支持该邮箱厂商，请使用自定义配置");

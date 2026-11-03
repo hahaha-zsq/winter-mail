@@ -10,19 +10,25 @@ import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Base64;
 
-/** 使用 256 位 AES-GCM 保护邮箱授权码；密钥由环境配置提供。 */
+/**
+ * 使用 256 位 AES-GCM 保护邮箱授权码；密钥由环境配置提供。
+ */
 @Component
 public class CredentialCipher {
     private final SecretKeySpec key;
 
-    /** Base64 解码后必须恰好 32 字节，对应 AES-256 密钥。 */
+    /**
+     * Base64 解码后必须恰好 32 字节，对应 AES-256 密钥。
+     */
     public CredentialCipher(@Value("${mail.credential-key}") String encodedKey) {
         byte[] bytes = Base64.getDecoder().decode(encodedKey);
         if (bytes.length != 32) throw new IllegalArgumentException("MAIL_CREDENTIAL_KEY 必须是 32 字节的 Base64 密钥");
         key = new SecretKeySpec(bytes, "AES");
     }
 
-    /** 每次加密生成独立的 12 字节随机 nonce，并把 nonce 放在密文前。 */
+    /**
+     * 每次加密生成独立的 12 字节随机 nonce，并把 nonce 放在密文前。
+     */
     public String encrypt(String plain) {
         try {
             byte[] nonce = new byte[12];
@@ -39,7 +45,9 @@ public class CredentialCipher {
         }
     }
 
-    /** 从密文前缀恢复 nonce；GCM 标签校验失败时拒绝返回明文。 */
+    /**
+     * 从密文前缀恢复 nonce；GCM 标签校验失败时拒绝返回明文。
+     */
     public String decrypt(String encoded) {
         try {
             byte[] data = Base64.getDecoder().decode(encoded);
